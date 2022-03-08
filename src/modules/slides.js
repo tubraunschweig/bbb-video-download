@@ -1,6 +1,4 @@
 const fs = require('fs')
-const http = require('http')
-const getPort = require('get-port')
 const puppeteer = require('puppeteer-core')
 const childProcess = require('child_process')
 const { parseStringPromise } = require('xml2js')
@@ -158,67 +156,12 @@ const getFrameByTimestamp = (frames, timestamp) => {
 
 
 const createFrames = async (config, presentation) => {
-    const port = await getPort({ port: getPort.makeRange(3000, 3100) })
-    const server = await createServer(config.args.input, port)
-    await captureFrames(config,'http://localhost:' + port, presentation, config.workdir)
-    server.close()
+    await captureFrames(config,'file://'+config.args.input, presentation, config.workdir)
 }
 
-const createServer = async (basedir, port) => {
-    return http.createServer((req, res) => {
-        fs.readFile(basedir + req.url, (err, data) => {
-            if (err) {
-                res.writeHead(404)
-                res.end(JSON.stringify(err))
-                return
-            }
-            res.writeHead(200)
-            res.end(data)
-        })
-    }).listen(port)
-}
-
-const captureFrames = async (config,serverUrl, presentation, workdir) => {
-    const minimal_args = [
-        '--autoplay-policy=user-gesture-required',
-        '--disable-background-networking',
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-breakpad',
-        '--disable-client-side-phishing-detection',
-        '--disable-component-update',
-        '--disable-default-apps',
-        '--disable-dev-shm-usage',
-        '--disable-domain-reliability',
-        '--disable-extensions',
-        '--disable-features=AudioServiceOutOfProcess',
-        '--disable-hang-monitor',
-        '--disable-ipc-flooding-protection',
-        '--disable-notifications',
-        '--disable-offer-store-unmasked-wallet-cards',
-        '--disable-popup-blocking',
-        '--disable-print-preview',
-        '--disable-prompt-on-repost',
-        '--disable-renderer-backgrounding',
-        '--disable-setuid-sandbox',
-        '--disable-speech-api',
-        '--disable-sync',
-        '--hide-scrollbars',
-        '--ignore-gpu-blacklist',
-        '--metrics-recording-only',
-        '--mute-audio',
-        '--no-default-browser-check',
-        '--no-first-run',
-        '--no-pings',
-        '--no-sandbox',
-        '--no-zygote',
-        '--password-store=basic',
-        '--use-gl=swiftshader',
-        '--use-mock-keychain',
-      ];
+const captureFrames = async (config,baseUrl, presentation, workdir) => {
     const browser = await puppeteer.launch({
          headless: true,
-         args: minimal_args,
          executablePath: '/usr/bin/chromium-browser'
         })
     const page = await browser.newPage()
@@ -227,7 +170,7 @@ const captureFrames = async (config,serverUrl, presentation, workdir) => {
         height: config.args.height,
         deviceScaleFactor: config.args.quality
     })
-    await page.goto(serverUrl + '/shapes.svg')
+    await page.goto(baseUrl + '/shapes.svg')
     await page.waitForSelector('#svgfile')
     // add cursor
     await page.evaluate(() => { 
