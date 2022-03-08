@@ -156,14 +156,14 @@ const getFrameByTimestamp = (frames, timestamp) => {
 
 
 const createFrames = async (config, presentation) => {
-    await captureFrames(config,'file://'+config.args.input, presentation, config.workdir)
+    await captureFrames(config, 'file://' + config.args.input, presentation, config.workdir)
 }
 
-const captureFrames = async (config,baseUrl, presentation, workdir) => {
+const captureFrames = async (config, baseUrl, presentation, workdir) => {
     const browser = await puppeteer.launch({
-         headless: true,
-         executablePath: '/usr/bin/chromium-browser'
-        })
+        headless: true,
+        executablePath: '/usr/bin/chromium-browser'
+    })
     const page = await browser.newPage()
     await page.setViewport({
         width: config.args.width,
