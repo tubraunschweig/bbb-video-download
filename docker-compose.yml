@@ -5,7 +5,7 @@ services:
       context: ./src
       dockerfile: Dockerfile
     volumes:
-      - /var/bigbluebutton/published/presentation:/var/bigbluebutton/published/presentation
-      - ./tmp:/home/bigbluebutton/tmp
+      - /mnt/scalelite-recordings:/mnt/scalelite-recordings
+      - /tmp:/home/bigbluebutton/tmp
     security_opt:
       - seccomp:"./chrome.json"
